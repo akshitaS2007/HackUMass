@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_PATH: /data/demo.db
+      NESSIE_MODE: ${NESSIE_MODE:-mock}
+      NESSIE_API_KEY: ${NESSIE_API_KEY:-}
+      NESSIE_BASE_URL: ${NESSIE_BASE_URL:-http://api.reimaginebanking.com}
+      NESSIE_ACCOUNT_MAP: "${NESSIE_ACCOUNT_MAP:-{}}"
+      NESSIE_PAYEE_MAP: "${NESSIE_PAYEE_MAP:-{}}"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    ports:
+      - "8000:8000"
+    volumes:
+      - demo_data:/data
+
+  web:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_BASE: http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+
+volumes:
+  demo_data:

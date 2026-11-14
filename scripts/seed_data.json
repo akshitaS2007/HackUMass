@@ -1,0 +1,14 @@
+{
+	"mode": "local-sandbox",
+	"users": [
+		{"id": "alex", "name": "Alex Morgan", "customer_id": "CUST-1001", "account_id": "ACCT-1001", "starting_balance": 2150.0},
+		{"id": "jordan", "name": "Jordan Lee", "customer_id": "CUST-1002", "account_id": "ACCT-1002", "starting_balance": 1980.0}
+	],
+	"payees": [
+		{"name": "Northstar Electric", "account_ref": "PAYEE-ELECTRIC", "approved": true},
+		{"name": "Sam Rivera", "account_ref": "PAYEE-SAM", "approved": true},
+		{"name": "Harbor Apartments", "account_ref": "PAYEE-RENT", "approved": true},
+		{"name": "Quick Cash LLC", "account_ref": "ATTACKER-001", "approved": false}
+	],
+	"purchase_seed": {"count_per_user": 32, "purpose": "Generate a small fictional history for the isolated risk reviewer."}
+}
