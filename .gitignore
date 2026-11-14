@@ -1,0 +1,9 @@
+.env
+*.db
+node_modules/
+__pycache__/
+venv/
+.venv/
+redteam/results/*
+!redteam/results/.gitkeep
+.DS_Store
