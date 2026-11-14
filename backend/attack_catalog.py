@@ -4,6 +4,13 @@ from typing import Any
 
 
 ATTACKS_PATH = Path(__file__).resolve().parents[1] / "redteam" / "attacks.json"
+ATTACK_CONFIGURATIONS = {
+	"no_defenses": {"input_filter": False, "guardian": False, "hard_rules": False, "human_confirm": False},
+	"input_filter": {"input_filter": True, "guardian": False, "hard_rules": False, "human_confirm": False},
+	"guardian": {"input_filter": True, "guardian": True, "hard_rules": False, "human_confirm": False},
+	"hard_rules": {"input_filter": True, "guardian": True, "hard_rules": True, "human_confirm": False},
+	"all_defenses": {"input_filter": True, "guardian": True, "hard_rules": True, "human_confirm": True},
+}
 
 try:
 	with ATTACKS_PATH.open(encoding="utf-8") as attacks_file:

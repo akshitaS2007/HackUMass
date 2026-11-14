@@ -3,12 +3,8 @@ from typing import Any
 from . import db
 from .agent.agent import propose
 from .agent.explainer import explain_decision
-from .config import NESSIE_MODE, POLICY
-from .layers.guardian import review
-from .layers.hard_rules import evaluate
-from .layers.human_confirm import confirmation_required
-from .layers.input_filter import inspect_message
-from .layers.output_guard import sanitize
+from .config import NESSIE_MODE
+from .defenses import confirmation_required, evaluate, inspect_message, review, sanitize
 from .nessie.client import NessieTransferUncertain
 from .nessie.executor import execute_transfer
 
