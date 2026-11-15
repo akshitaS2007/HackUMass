@@ -9,10 +9,10 @@ export default function ScoreboardPage({ rows, categories, lastUpdated, onOpenAt
 	return (
 		<div className="standard-page">
 			<PageHeading
-				eyebrow="MEASURED OUTCOMES"
-				title="The scoreboard"
-				description="Only recorded sandbox runs appear here. No pre-filled results, no estimated success rates."
-				aside={lastUpdated && <div className="updated-stamp"><Clock3 size={14} /> UPDATED {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>}
+				eyebrow="Your test runs"
+				title="How did the checks do?"
+				description="This page only shows runs you’ve actually made. No made-up scores."
+				aside={lastUpdated && <div className="updated-stamp"><Clock3 size={14} /> Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>}
 			/>
 			<ScoreChart rows={rows} categories={categories} onOpenAttack={onOpenAttack} />
 		</div>

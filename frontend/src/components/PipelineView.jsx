@@ -6,12 +6,22 @@ import { LAYER_INFO } from "../shared.jsx";
 
 export default function PipelineView({ pipeline, payees }) {
 	const blocked = pipeline.some((step) => ["blocked", "deny"].includes(step.decision));
+	const executor = pipeline.find((step) => step.layer === "executor");
+	const decisionName = (decision) => ({
+		passed: "Checked",
+		approved: "Approved",
+		executed: "Sent",
+		blocked: "Stopped",
+		deny: "Stopped",
+		skipped: "Not needed",
+		no_action: "No payment",
+	}[decision] || decision.replaceAll("_", " "));
 	return (
 		<aside className="chat-rail">
 			<div className="rail-heading">
-				<div><span className="section-label">LIVE PIPELINE</span><p>Every proposal is reviewed.</p></div>
+				<div><span className="section-label">Before a payment goes through</span><p>Here’s what the checks are doing.</p></div>
 				<div className={`pipeline-status ${blocked ? "blocked" : pipeline.length ? "passed" : "idle"}`}>
-					{blocked ? <><ShieldAlert size={14} /> STOPPED</> : pipeline.length ? <><ShieldCheck size={14} /> CHECKED</> : <><Clock3 size={14} /> WAITING</>}
+					{blocked ? <><ShieldAlert size={14} /> Stopped</> : pipeline.length ? <><ShieldCheck size={14} /> Checked</> : <><Clock3 size={14} /> Waiting</>}
 				</div>
 			</div>
 			<div className="pipeline-list">
@@ -24,21 +34,21 @@ export default function PipelineView({ pipeline, payees }) {
 								{result ? approved ? <Check size={13} /> : result.decision === "skipped" ? <span>–</span> : <X size={13} /> : layer.layer}
 							</div>
 							<div className="pipeline-step-copy"><strong>{layer.name}</strong><span>{result?.reason || layer.detail}</span></div>
-							<div className="pipeline-arrow">{result ? result.decision.toUpperCase() : "—"}</div>
+							<div className="pipeline-arrow">{result ? decisionName(result.decision) : "—"}</div>
 						</div>
 					);
 				})}
 				<div className={`pipeline-step ${pipeline.some((step) => step.layer === "executor") ? "executed" : "pending"}`}>
 					<div className="layer-node executor">{pipeline.some((step) => step.decision === "executed") ? <Check size={13} /> : <Banknote size={13} />}</div>
 					<div className="pipeline-step-copy">
-						<strong>Sandbox executor</strong>
-						<span>{pipeline.find((step) => step.layer === "executor")?.reason || "No funds move until every required check passes."}</span>
+						<strong>Demo payment</strong>
+						<span>{executor?.reason || "Nothing moves until the required checks pass."}</span>
 					</div>
-					<div className="pipeline-arrow">{pipeline.find((step) => step.layer === "executor")?.decision?.toUpperCase() || "—"}</div>
+					<div className="pipeline-arrow">{executor ? decisionName(executor.decision) : "—"}</div>
 				</div>
 			</div>
 			<div className="payee-box">
-				<div className="section-label">SAVED PAYEES <span>{payees.length}</span></div>
+				<div className="section-label">Your payees <span>{payees.length}</span></div>
 				{payees.slice(0, 4).map((payee) => (
 					<div className="payee-line" key={payee.id}>
 						<span className="payee-avatar">{payee.name.slice(0, 1)}</span>
@@ -47,7 +57,7 @@ export default function PipelineView({ pipeline, payees }) {
 					</div>
 				))}
 			</div>
-			<div className="rail-footnote"><ShieldCheck size={15} /><span><strong>Actions are not autonomous.</strong> The agent proposes. Code decides. Then, if needed, you approve.</span></div>
+			<div className="rail-footnote"><ShieldCheck size={15} /><span><strong>You’re in control.</strong> The assistant can suggest a payment; it can’t approve one for you.</span></div>
 		</aside>
 	);
 }

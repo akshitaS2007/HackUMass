@@ -23,7 +23,7 @@ function ChatComposer({ disabled, onSend }) {
 						submit(event);
 					}
 				}}
-				placeholder="Try: Pay my electric bill $80"
+				placeholder="Try asking: “What’s my balance?”"
 				aria-label="Message the banking assistant"
 				rows={1}
 				disabled={disabled}
@@ -39,18 +39,18 @@ function ChatComposer({ disabled, onSend }) {
 export default function ChatBox({ chat, assistantMode, busy, onSend }) {
 	const usesGemini = assistantMode?.provider === "gemini";
 	const modeTitle = usesGemini
-		? `Gemini is configured (${assistantMode.model}). Agent, guardian, and explainer use Gemini when requests succeed.`
-		: "Using the deterministic local assistant and reviewer; no Gemini key is configured.";
+		? `Gemini is on (${assistantMode.model}). Some parts of the review may use it.`
+		: "Running locally. No Gemini key is set.";
 
 	return (
 		<div className="chat-card">
 			<div className="chat-card-head">
 				<div className="assistant-identity">
 					<div className="assistant-icon"><Sparkles size={16} /></div>
-					<div><strong>Banking assistant</strong><span>Connected to your demo account</span></div>
+					<div><strong>BTB assistant</strong><span>Here to help with this demo account</span></div>
 				</div>
 				<span className="model-pill" title={modeTitle}>
-					<span />{usesGemini ? `GEMINI · ${assistantMode.model || "CONFIGURED"}` : assistantMode ? "LOCAL · READY" : "CHECKING"}
+					<span />{usesGemini ? "Gemini on" : assistantMode ? "Local mode" : "Connecting"}
 				</span>
 			</div>
 			<div className="message-list">
@@ -58,7 +58,7 @@ export default function ChatBox({ chat, assistantMode, busy, onSend }) {
 					<div className={`message-row ${item.role}`} key={`${index}-${item.role}`}>
 						<div className="message-avatar">{item.role === "assistant" ? <Sparkles size={15} /> : "Y"}</div>
 						<div className="message-content">
-							<span className="message-author">{item.role === "assistant" ? "ASSISTANT" : "YOU"}</span>
+							<span className="message-author">{item.role === "assistant" ? "BTB" : "YOU"}</span>
 							<p>{item.text}</p>
 						</div>
 					</div>
@@ -66,7 +66,7 @@ export default function ChatBox({ chat, assistantMode, busy, onSend }) {
 				{busy && <div className="message-row assistant"><div className="message-avatar"><Sparkles size={15} /></div><div className="typing"><i /><i /><i /></div></div>}
 			</div>
 			<ChatComposer disabled={busy} onSend={onSend} />
-			<div className="composer-hint"><LockKeyhole size={12} /> Every transfer passes through the policy engine.</div>
+			<div className="composer-hint"><LockKeyhole size={12} /> We check every payment before it goes through.</div>
 		</div>
 	);
 }

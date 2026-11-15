@@ -7,14 +7,14 @@ import { LAYER_INFO, PageHeading, money } from "../shared.jsx";
 
 export default function DefensePage({ defenses, locked, account, saving, sandboxMode, onToggle }) {
 	const description = sandboxMode === "nessie"
-		? "Every Nessie sandbox transfer requires your approval. Hard rules and confirmation controls stay locked."
-		: "Toggle each layer independently. Changes apply immediately to the next request.";
+		? "In Nessie mode, these checks stay on and every payment needs your approval."
+		: "Choose which checks to use. Your changes apply to the next request.";
 
 	return (
 		<div className="standard-page">
 			<PageHeading
-				eyebrow="POLICY CONFIGURATION"
-				title="Defense controls"
+				eyebrow="Your safety settings"
+				title="How careful should BTB be?"
 				description={description}
 				aside={<div className="balance-mini"><span>LIVE BALANCE</span><strong>{money(account?.balance)}</strong></div>}
 			/>
@@ -32,18 +32,18 @@ export default function DefensePage({ defenses, locked, account, saving, sandbox
 					))}
 				</div>
 				<aside className="policy-aside">
-					<div className="policy-aside-head"><LockKeyhole size={17} /><span>FIXED POLICY</span></div>
-					<h3>Code has the final say.</h3>
-					<p>These controls are enforced by the backend, independently of model output.</p>
-					<div className="policy-rule"><span>Single transfer</span><strong>$200 max</strong></div>
-					<div className="policy-rule"><span>Daily outbound</span><strong>$500 max</strong></div>
-					<div className="policy-rule"><span>Transfer velocity</span><strong>5 / minute</strong></div>
-					<div className="policy-rule"><span>New payee</span><strong>Approval required</strong></div>
-					<div className="policy-note"><CircleAlert size={15} /><span>Use disabled layers only for controlled demos. Toggle states are saved per account until changed.</span></div>
+					<div className="policy-aside-head"><LockKeyhole size={17} /><span>Always on</span></div>
+					<h3>Some limits can’t be switched off.</h3>
+					<p>These checks run in code, not in the AI assistant.</p>
+					<div className="policy-rule"><span>One payment</span><strong>Up to $200</strong></div>
+					<div className="policy-rule"><span>Per day</span><strong>Up to $500</strong></div>
+					<div className="policy-rule"><span>In one minute</span><strong>5 payments</strong></div>
+					<div className="policy-rule"><span>New payee</span><strong>Needs your OK</strong></div>
+					<div className="policy-note"><CircleAlert size={15} /><span>Try turning checks off only in the demo. They’re saved for this account until you change them back.</span></div>
 				</aside>
 			</div>
 			<div className="defense-footer">
-				<ShieldCheck size={16} /><span>{saving ? "Saving defense settings…" : "Settings are account-scoped and recorded with every security decision."}</span>
+				<ShieldCheck size={16} /><span>{saving ? "Saving your settings…" : "These settings apply to this demo account."}</span>
 			</div>
 		</div>
 	);

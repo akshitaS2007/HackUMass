@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	Activity, ArrowUpRight, CircleAlert, FileClock, FlaskConical, Gauge,
-	LockKeyhole, LogOut, MessageSquareText, RotateCcw, Shield, ShieldCheck,
-	SlidersHorizontal, X,
+	House, LockKeyhole, LogOut, RotateCcw, ShieldCheck,
+	X,
 } from "lucide-react";
 
 import { api, post, setToken } from "./api.js";
@@ -11,16 +11,18 @@ import AuditLogPage from "./pages/AuditLogPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import DefensePage from "./pages/DefensePage.jsx";
 import ScoreboardPage from "./pages/ScoreboardPage.jsx";
+import AssistantDock from "./components/AssistantDock.jsx";
 import ConfirmModal from "./components/ConfirmModal.jsx";
+import SharkMark from "./components/SharkMark.jsx";
 import { PageHeading, TEST_PROMPTS } from "./shared.jsx";
 
 
 const NAV_ITEMS = [
-	{ id: "chat", label: "Assistant", icon: MessageSquareText },
-	{ id: "defenses", label: "Defense controls", icon: SlidersHorizontal },
-	{ id: "attack", label: "Attack mode", icon: FlaskConical },
-	{ id: "scoreboard", label: "Scoreboard", icon: Gauge },
-	{ id: "audit", label: "Audit trail", icon: FileClock },
+	{ id: "chat", label: "Home", title: "Assistant", icon: House },
+	{ id: "defenses", label: "Safety", title: "Defense controls", icon: ShieldCheck },
+	{ id: "attack", label: "Test", title: "Attack mode", icon: FlaskConical },
+	{ id: "scoreboard", label: "Results", title: "Scoreboard", icon: Gauge },
+	{ id: "audit", label: "Activity", title: "Audit trail", icon: FileClock },
 ];
 
 
@@ -41,13 +43,14 @@ export default function App() {
 	const [busy, setBusy] = useState(false);
 	const [savingDefense, setSavingDefense] = useState(false);
 	const [error, setError] = useState("");
-	const [chat, setChat] = useState([{ role: "assistant", text: "Good morning. I can check your balance, review recent activity, or prepare a transfer to a saved payee." }]);
+	const [chat, setChat] = useState([{ role: "assistant", text: "Hi! I can check your balance, look over recent activity, or help prepare a payment to a saved payee." }]);
 	const [pipeline, setPipeline] = useState([]);
 	const [pending, setPending] = useState(null);
 	const [attackText, setAttackText] = useState(TEST_PROMPTS[0]);
 	const [attackResult, setAttackResult] = useState(null);
 	const [attackCount, setAttackCount] = useState(0);
 	const [lastUpdated, setLastUpdated] = useState(null);
+	const touchStart = useRef(null);
 
 	async function refresh() {
 		const [accountData, defenseData, eventData, scoreData] = await Promise.all([
@@ -98,7 +101,7 @@ export default function App() {
 			}
 			localStorage.setItem("bb_user", userId);
 			setUser(result.user);
-			setChat([{ role: "assistant", text: `Welcome, ${result.user.name.split(" ")[0]}. Your sandbox account is ready.` }]);
+			setChat([{ role: "assistant", text: `Hi, ${result.user.name.split(" ")[0]}. You’re in the demo account. Ask me about the balance, recent activity, or a payment.` }]);
 		} catch (exception) {
 			setError(exception.message);
 		} finally {
@@ -181,7 +184,7 @@ export default function App() {
 			setAccount(result.account);
 			setPending(null);
 			setAttackResult(null);
-			setChat([{ role: "assistant", text: "Sandbox reset. Your demo balance and transfer history are back to their starting state." }]);
+			setChat([{ role: "assistant", text: "All set — the demo balance is back where it started." }]);
 			setPipeline([]);
 			await refresh();
 		} catch (exception) {
@@ -210,25 +213,43 @@ export default function App() {
 		}
 	}
 
+	function startSwipe(event) {
+		if (event.target.closest?.("button, input, textarea, select, a, [role='dialog']")) return;
+		touchStart.current = { x: event.clientX, y: event.clientY };
+	}
+
+	function finishSwipe(event) {
+		if (!touchStart.current) return;
+		const deltaX = event.clientX - touchStart.current.x;
+		const deltaY = event.clientY - touchStart.current.y;
+		touchStart.current = null;
+		if (Math.abs(deltaX) < 70 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+		setView((current) => {
+			const index = NAV_ITEMS.findIndex((item) => item.id === current);
+			const direction = deltaX < 0 ? 1 : -1;
+			return NAV_ITEMS[(index + direction + NAV_ITEMS.length) % NAV_ITEMS.length].id;
+		});
+	}
+
 	if (!user) return <LoginScreen users={users} onChoose={chooseUser} busy={busy} error={error} />;
 
 	return (
 		<div className="app-shell">
 			<aside className="sidebar">
 				<div className="brand-lockup">
-					<div className="brand-mark"><Shield size={20} strokeWidth={2.2} /></div>
-					<div><span className="brand-name">break the bank</span><span className="brand-subtitle">AI SECURITY LAB</span></div>
+					<div className="brand-mark" aria-label="BTB shark logo"><SharkMark /><span className="brand-monogram">BTB</span></div>
+					<div><span className="brand-name">Break the Bank</span><span className="brand-subtitle">Money, with guardrails</span></div>
 				</div>
-				<div className="workspace-label">WORKSPACE</div>
+				<div className="workspace-label">Your demo</div>
 				<nav className="primary-nav" aria-label="Main navigation">
-					{NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-						<button key={id} aria-label={label} title={label} className={`nav-item ${view === id ? "active" : ""}`} onClick={() => setView(id)}>
+					{NAV_ITEMS.map(({ id, label, title, icon: Icon }) => (
+						<button key={id} aria-label={title} title={title} className={`nav-item ${view === id ? "active" : ""}`} onClick={() => setView(id)}>
 							<Icon size={17} /><span>{label}</span>{id === "attack" && <span className="nav-live-dot" />}
 						</button>
 					))}
 				</nav>
 				<div className="sidebar-lower">
-					<div className="sidebar-status"><span className="status-dot" /> SANDBOX ENVIRONMENT <span className="status-lock"><LockKeyhole size={12} /></span></div>
+					<div className="sidebar-status"><span className="status-dot" /> Demo money, real checks <span className="status-lock"><LockKeyhole size={12} /></span></div>
 					<div className="sidebar-profile">
 						<div className="avatar">{user.name.split(" ").map((part) => part[0]).join("")}</div>
 						<div className="profile-copy"><strong>{user.name}</strong><span>Demo account</span></div>
@@ -239,21 +260,25 @@ export default function App() {
 
 			<main className="main-area">
 				<header className="topbar">
-					<div className="breadcrumb"><span>Security workspace</span><span className="crumb-slash">/</span><strong>{NAV_ITEMS.find((item) => item.id === view)?.label}</strong></div>
+					<div className="breadcrumb"><span className="topbar-brand-name">Break the Bank</span><span className="topbar-mark">BTB</span><span className="crumb-slash">/</span><strong>{NAV_ITEMS.find((item) => item.id === view)?.title}</strong></div>
 					<div className="topbar-actions">
-						<div className="live-badge"><span /> {sandboxMode === "nessie" ? "NESSIE SANDBOX" : "LOCAL SANDBOX"}</div>
+						<div className="live-badge"><span /> {sandboxMode === "nessie" ? "Nessie sandbox" : "Demo mode"}</div>
+						<button className="button button-quiet account-switch-button" onClick={signOut} title="Switch demo account" aria-label="Switch demo account">
+							<LogOut size={15} /><span>Switch account</span>
+						</button>
 						<button
 							className="button button-quiet reset-button"
 							onClick={resetDemo}
 							disabled={busy || sandboxMode === "nessie"}
-							title={sandboxMode === "nessie" ? "A local reset cannot reverse an external Nessie transfer." : "Restore the local mock account"}
+							title={sandboxMode === "nessie" ? "A local reset cannot undo a Nessie transfer." : "Put the demo balance back where it started"}
 						>
-							<RotateCcw size={15} /> {sandboxMode === "nessie" ? "Reset unavailable" : "Reset demo"}
+							<RotateCcw size={15} /> {sandboxMode === "nessie" ? "Reset unavailable" : "Start over"}
 						</button>
 					</div>
 				</header>
 				{error && <div className="toast-error" role="alert"><CircleAlert size={16} />{error}<button onClick={() => setError("")} aria-label="Dismiss"><X size={15} /></button></div>}
-				<div className="workspace-content">
+				<div className="workspace-content" onPointerDown={startSwipe} onPointerUp={finishSwipe} onPointerCancel={() => { touchStart.current = null; }}>
+					<div className="page-transition" key={view}>
 					{view === "chat" && (
 						<ChatPage
 							account={account}
@@ -279,8 +304,8 @@ export default function App() {
 					)}
 					{view === "attack" && (sandboxMode === "nessie"
 						? <div className="standard-page">
-							<PageHeading eyebrow="MOCK SANDBOX ONLY" title="Attack mode paused" description="Attack runs are disabled while Nessie is selected. External fake-money transfers cannot be rolled back safely." />
-							<div className="policy-note"><LockKeyhole size={15} /><span>Switch the backend to NESSIE_MODE=mock to run the local red-team exercise.</span></div>
+							<PageHeading eyebrow="TESTING IS PAUSED" title="No attack tests in Nessie mode" description="Switch back to the local demo to test safely. This mode won’t run attack prompts against an external account." />
+							<div className="policy-note"><LockKeyhole size={15} /><span>Choose mock mode in the backend settings to run these tests.</span></div>
 						</div>
 						: <AttackModePage text={attackText} setText={setAttackText} onRun={runAttack} result={attackResult} pipeline={pipeline} count={attackCount} busy={busy} />
 					)}
@@ -293,12 +318,21 @@ export default function App() {
 						/>
 					)}
 					{view === "audit" && <AuditLogPage events={events} />}
+					</div>
 				</div>
 				<footer className="app-footer">
-					<span><LockKeyhole size={12} /> {sandboxMode === "nessie" ? "Fake-money transfers use your configured Nessie sandbox." : "No real funds. Transfers stay inside this local sandbox."}</span>
-					<span>POLICY ENGINE v1.0 <i /> {account?.id || "ACCOUNT"}</span>
+					<span><LockKeyhole size={12} /> {sandboxMode === "nessie" ? "Nessie sandbox: transfers use fake money." : "Just a demo. No real money moves."}</span>
+					<span>Demo account <i /> {account?.id || "ACCOUNT"}</span>
 				</footer>
 			</main>
+			<nav className="bottom-nav" aria-label="Go to a page">
+				{NAV_ITEMS.map(({ id, label, title, icon: Icon }) => (
+					<button key={id} aria-label={title} aria-current={view === id ? "page" : undefined} className={view === id ? "active" : ""} onClick={() => setView(id)}>
+						<Icon size={17} /><span>{label}</span>
+					</button>
+				))}
+			</nav>
+			<AssistantDock chat={chat} busy={busy} onSend={sendMessage} />
 			{pending && <ConfirmModal pending={pending} busy={busy} onResolve={resolvePending} />}
 		</div>
 	);
@@ -310,33 +344,33 @@ function LoginScreen({ users, onChoose, busy, error }) {
 		<main className="login-screen">
 			<div className="login-left">
 				<div className="brand-lockup">
-					<div className="brand-mark"><Shield size={20} /></div>
-					<div><span className="brand-name">break the bank</span><span className="brand-subtitle">AI SECURITY LAB</span></div>
+					<div className="brand-mark" aria-label="BTB shark logo"><SharkMark /><span className="brand-monogram">BTB</span></div>
+					<div><span className="brand-name">Break the Bank</span><span className="brand-subtitle">Money, with guardrails</span></div>
 				</div>
 				<div className="login-copy">
-					<div className="eyebrow"><span className="eyebrow-line" /> AGENTIC FINANCE, UNDER PRESSURE</div>
-					<h1>Trust is a<br /><em>system.</em></h1>
-					<p>A financial AI sandbox built to show where safeguards hold, where they fail, and what happens next.</p>
-					<div className="login-proof"><span><ShieldCheck size={16} /> Four defense layers</span><span><Activity size={16} /> Live policy trace</span></div>
+					<div className="eyebrow"><span className="eyebrow-line" /> Try it. See what happens.</div>
+					<h1>Money moves.<br /><em>Checks first.</em></h1>
+					<p>Ask the assistant for help, try a transfer, or see if you can fool it. Every account here is a sandbox.</p>
+					<div className="login-proof"><span><ShieldCheck size={16} /> Four checks before a transfer</span><span><Activity size={16} /> See why it passed or stopped</span></div>
 				</div>
-				<div className="login-foot">HACKUMASS · SECURITY TRACK</div>
+				<div className="login-foot">A financial AI safety demo</div>
 			</div>
 			<div className="login-right">
 				<div className="login-panel">
-					<div className="panel-kicker">DEMO ENVIRONMENT <span className="status-dot" /></div>
-					<h2>Choose a test account</h2>
-					<p className="login-note">Each account contains fictional funds and seeded payees.</p>
+					<div className="panel-kicker">Ready when you are <span className="status-dot" /></div>
+					<h2>Pick a demo account</h2>
+					<p className="login-note">These accounts have made-up balances and payees.</p>
 					<div className="user-options">
 						{users.map((item, index) => (
 							<button key={item.id} className="user-option" onClick={() => onChoose(item.id)} disabled={busy}>
 								<div className={`avatar avatar-${index}`}>{item.name.split(" ").map((part) => part[0]).join("")}</div>
-								<div><strong>{item.name}</strong><span>Personal checking · Sandbox</span></div>
+								<div><strong>{item.name}</strong><span>Demo checking account</span></div>
 								<ArrowUpRight size={17} />
 							</button>
 						))}
 					</div>
 					{error && <p className="form-error">{error}</p>}
-					<div className="login-security"><LockKeyhole size={14} /> Local demo session · no real account access</div>
+					<div className="login-security"><LockKeyhole size={14} /> This is a demo. No real account is connected.</div>
 				</div>
 			</div>
 		</main>

@@ -20,10 +20,10 @@ export default function ChatPage({
 	return (
 		<div className="chat-page">
 			<PageHeading
-				eyebrow="ACCOUNT ASSISTANT"
-				title="Money, with guardrails."
-				description="Ask about your account or prepare a transfer. Every action is checked before it moves."
-				aside={<div className="session-chip"><span className="status-dot" /> SESSION VERIFIED</div>}
+				eyebrow="Your demo account"
+				title="Your money, your call."
+				description="Check the balance, look over recent activity, or try a payment. We check it before anything happens."
+				aside={<div className="session-chip"><span className="status-dot" /> You’re signed in</div>}
 			/>
 			<div className="chat-layout">
 				<section className="chat-column">
